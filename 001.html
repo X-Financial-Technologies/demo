@@ -1,122 +1,227 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>USDX Protocol Demo</title>
     <style>
-        body { font-family: Arial; font-size:14px; background:#fff; color:#000; }
-        .container { max-width:600px; margin:20px auto; padding:20px; border:1px solid #ccc; }
-        .step { margin:15px 0; padding:10px; border-left:3px solid transparent; transition:all 0.5s; }
-        .active { border-color:#000; background:#f8f8f8; }
-        .balances { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:20px 0; }
-        .balance-box { padding:10px; border:1px solid #000; text-align:center; }
-        @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-        .fade-in { animation:fadeIn 0.5s; }
+        body {
+            font: 14px Arial;
+            margin: 20px;
+            background: white;
+            color: black;
+        }
+
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid black;
+        }
+
+        .balance-panel {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+            border-bottom: 1px solid black;
+            padding-bottom: 20px;
+        }
+
+        .balance-card {
+            padding: 10px;
+            border: 1px solid black;
+            text-align: center;
+            background: white;
+        }
+
+        .demo-step {
+            margin: 15px 0;
+            padding: 10px;
+            border-left: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .active-step {
+            border-left-color: black;
+            background: #f8f8f8;
+        }
+
+        .progress-bar {
+            height: 3px;
+            background: #eee;
+            margin: 15px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: black;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        @keyframes fade {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        .fade-in {
+            animation: fade 0.4s forwards;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>USDX Protocol Demo (Automated Flow)</h2>
+        <h2>USDX Protocol Demonstration</h2>
         
-        <div class="balances">
-            <div class="balance-box" id="usdc-bal">USDC: 0.00</div>
-            <div class="balance-box" id="usdx-bal">USDX: 0.00</div>
-            <div class="balance-box" id="wusdx-bal">wUSDX: 0.00</div>
+        <div class="balance-panel">
+            <div class="balance-card" id="usdcBalance">USDC: 0.00</div>
+            <div class="balance-card" id="usdxBalance">USDX: 0.00</div>
+            <div class="balance-card" id="wusdxBalance">wUSDX: 0.00</div>
         </div>
 
-        <div class="step" id="step1">1. Initializing KYC verification...</div>
-        <div class="step" id="step2">2. Minting USDX from USDC deposit</div>
-        <div class="step" id="step3">3. Daily rebase yield accrual</div>
-        <div class="step" id="step4">4. Wrapping USDX → wUSDX for DeFi</div>
-        <div class="step" id="step5">5. Redeeming USDX → USDC (48h delay)</div>
-        <div class="step" id="reserves">Reserves: 100% T-Bill Backed ✔️</div>
+        <section aria-label="Protocol Steps">
+            <div class="demo-step" id="step1">1. KYC Verification</div>
+            <div class="demo-step" id="step2">2. Mint USDX (0.25% fee)</div>
+            <div class="demo-step" id="step3">3. Daily Yield Rebase</div>
+            <div class="demo-step" id="step4">4. Wrap to wUSDX</div>
+            <div class="demo-step" id="step5">5. Redeem USDC (0.5% fee)</div>
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+        </section>
     </div>
 
     <script>
-        let currentStep = 0;
-        const steps = document.querySelectorAll('.step');
-        const usdcBal = document.getElementById('usdc-bal');
-        const usdxBal = document.getElementById('usdx-bal');
-        const wusdxBal = document.getElementById('wusdx-bal');
-        let usdxAmount = 0;
-        let rebaseCount = 0;
+        (() => {
+            // Configuration
+            const INITIAL_USDC = 10000;
+            const MINT_FEE_RATE = 0.0025;
+            const REDEEM_FEE_RATE = 0.005;
+            const APY = 0.05;
+            const DAILY_REBASE = Math.pow(1 + APY, 1/365) - 1;
+            const REBASE_INTERVAL = 3000;
+            const STEP_DELAY = 2000;
 
-        // Demo automation sequence
-        function runDemo() {
-            // Reset all steps
-            steps.forEach(step => step.classList.remove('active', 'fade-in'));
-            currentStep = 0;
-            
-            // 1. Simulate KYC + USDC deposit
-            activateStep(0);
-            simulateProgress(1000, () => {
-                usdcBal.textContent = `USDC: 10,000.00`;
-                activateStep(1);
-                
-                // 2. Mint USDX (0.25% fee)
-                setTimeout(() => {
-                    usdxAmount = 10000 * 0.9975;
-                    usdcBal.textContent = `USDC: 0.00 (Fee: $25.00)`;
-                    usdxBal.textContent = `USDX: ${usdxAmount.toFixed(2)}`;
-                    activateStep(2);
-                    
-                    // 3. Start rebase simulation
-                    startRebase();
-                    
-                    // 4. Wrap to wUSDX after 2 rebases
-                    setTimeout(() => {
-                        activateStep(3);
-                        wusdxBal.textContent = `wUSDX: ${usdxAmount.toFixed(2)}`;
-                        usdxBal.textContent = `USDX: 0.00`;
-                        activateStep(4);
-                        
-                        // 5. Simulate redemption
-                        setTimeout(() => {
-                            activateStep(5);
-                            setTimeout(() => {
-                                usdcBal.textContent = `USDC: ${(usdxAmount * 0.995).toFixed(2)}`;
-                                usdxAmount = 0;
-                                usdxBal.textContent = 'USDX: 0.00';
-                                wusdxBal.textContent = 'wUSDX: 0.00';
-                                document.getElementById('reserves').classList.add('active', 'fade-in');
-                                
-                                // Restart demo
-                                setTimeout(runDemo, 3000);
-                            }, 2000);
-                        }, 2000);
-                    }, 6000);
-                }, 2000);
-            });
-        }
+            // State Management
+            const state = {
+                usdc: 0,
+                usdx: 0,
+                wusdx: 0,
+                rebaseTimer: null
+            };
 
-        function activateStep(stepIndex) {
-            steps[currentStep].classList.remove('active');
-            currentStep = stepIndex;
-            steps[stepIndex].classList.add('active', 'fade-in');
-        }
+            // DOM References
+            const dom = {
+                usdc: document.getElementById('usdcBalance'),
+                usdx: document.getElementById('usdxBalance'),
+                wusdx: document.getElementById('wusdxBalance'),
+                progress: document.querySelector('.progress-fill'),
+                steps: document.querySelectorAll('.demo-step')
+            };
 
-        function startRebase() {
-            const rebaseInterval = setInterval(() => {
-                rebaseCount++;
-                const yieldAmount = usdxAmount * 0.000137; // ~5% APY daily
-                usdxAmount += yieldAmount;
-                usdxBal.textContent = `USDX: ${usdxAmount.toFixed(2)} (+${yieldAmount.toFixed(2)})`;
-                steps[2].innerHTML = `3. Daily rebase (${rebaseCount}x): +5% APY`;
-            }, 5000); // Rebases every 5s for demo
-        }
+            // Protocol Simulation
+            const demo = {
+                async run() {
+                    while(true) {
+                        await this.reset();
+                        await this.kyc();
+                        await this.mint();
+                        await this.rebase();
+                        await this.wrap();
+                        await this.redeem();
+                    }
+                },
 
-        function simulateProgress(duration, callback) {
-            let start = Date.now();
-            const interval = setInterval(() => {
-                let progress = (Date.now() - start) / duration;
-                if (progress >= 1) {
-                    clearInterval(interval);
-                    callback();
+                async reset() {
+                    clearInterval(state.rebaseTimer);
+                    state.usdc = INITIAL_USDC;
+                    state.usdx = 0;
+                    state.wusdx = 0;
+                    dom.progress.style.width = '0%';
+                    this.updateDisplay();
+                    this.resetSteps();
+                },
+
+                async kyc() {
+                    this.highlightStep(0);
+                    await this.delay(STEP_DELAY);
+                    dom.steps[0].textContent = '✓ KYC Verified';
+                },
+
+                async mint() {
+                    this.highlightStep(1);
+                    const fee = state.usdc * MINT_FEE_RATE;
+                    state.usdx = state.usdc - fee;
+                    state.usdc = 0;
+                    this.updateDisplay();
+                    await this.delay(STEP_DELAY);
+                },
+
+                async rebase() {
+                    return new Promise(resolve => {
+                        this.highlightStep(2);
+                        let count = 0;
+                        state.rebaseTimer = setInterval(() => {
+                            state.usdx *= 1 + DAILY_REBASE;
+                            count++;
+                            dom.steps[2].textContent = 
+                                `3. Daily Rebase (${count}x): ${(DAILY_REBASE*100).toFixed(3)}%`;
+                            this.updateDisplay();
+                            if(count === 4) {
+                                clearInterval(state.rebaseTimer);
+                                resolve();
+                            }
+                        }, REBASE_INTERVAL);
+                    });
+                },
+
+                async wrap() {
+                    this.highlightStep(3);
+                    state.wusdx = state.usdx;
+                    state.usdx = 0;
+                    this.updateDisplay();
+                    await this.delay(STEP_DELAY);
+                },
+
+                async redeem() {
+                    this.highlightStep(4);
+                    for(let p=0; p<=100; p+=2) {
+                        dom.progress.style.width = `${p}%`;
+                        await this.delay(50);
+                    }
+                    const fee = state.wusdx * REDEEM_FEE_RATE;
+                    state.usdc = state.wusdx - fee;
+                    state.wusdx = 0;
+                    this.updateDisplay();
+                    await this.delay(STEP_DELAY);
+                },
+
+                // Utilities
+                updateDisplay() {
+                    dom.usdc.textContent = `USDC: ${state.usdc.toFixed(2)}`;
+                    dom.usdx.textContent = `USDX: ${state.usdx.toFixed(2)}`;
+                    dom.wusdx.textContent = `wUSDX: ${state.wusdx.toFixed(2)}`;
+                },
+
+                highlightStep(index) {
+                    dom.steps.forEach(step => {
+                        step.classList.remove('active-step', 'fade-in');
+                    });
+                    dom.steps[index].classList.add('active-step', 'fade-in');
+                },
+
+                resetSteps() {
+                    dom.steps[0].textContent = '1. KYC Verification';
+                    dom.steps[2].textContent = '3. Daily Yield Rebase';
+                },
+
+                delay(ms) {
+                    return new Promise(resolve => setTimeout(resolve, ms));
                 }
-            }, 100);
-        }
+            };
 
-        // Start demo
-        runDemo();
+            demo.run();
+        })();
     </script>
 </body>
 </html>
