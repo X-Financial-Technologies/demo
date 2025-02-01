@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>USDX Protocol Demo</title>
+    <style>
+        body { font-family: Arial; font-size:14px; background:#fff; color:#000; }
+        .container { max-width:600px; margin:20px auto; padding:20px; border:1px solid #ccc; }
+        .step { margin:15px 0; padding:10px; border-left:3px solid transparent; transition:all 0.5s; }
+        .active { border-color:#000; background:#f8f8f8; }
+        .balances { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:20px 0; }
+        .balance-box { padding:10px; border:1px solid #000; text-align:center; }
+        @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+        .fade-in { animation:fadeIn 0.5s; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>USDX Protocol Demo (Automated Flow)</h2>
+        
+        <div class="balances">
+            <div class="balance-box" id="usdc-bal">USDC: 0.00</div>
+            <div class="balance-box" id="usdx-bal">USDX: 0.00</div>
+            <div class="balance-box" id="wusdx-bal">wUSDX: 0.00</div>
+        </div>
+
+        <div class="step" id="step1">1. Initializing KYC verification...</div>
+        <div class="step" id="step2">2. Minting USDX from USDC deposit</div>
+        <div class="step" id="step3">3. Daily rebase yield accrual</div>
+        <div class="step" id="step4">4. Wrapping USDX → wUSDX for DeFi</div>
+        <div class="step" id="step5">5. Redeeming USDX → USDC (48h delay)</div>
+        <div class="step" id="reserves">Reserves: 100% T-Bill Backed ✔️</div>
+    </div>
+
+    <script>
+        let currentStep = 0;
+        const steps = document.querySelectorAll('.step');
+        const usdcBal = document.getElementById('usdc-bal');
+        const usdxBal = document.getElementById('usdx-bal');
+        const wusdxBal = document.getElementById('wusdx-bal');
+        let usdxAmount = 0;
+        let rebaseCount = 0;
+
+        // Demo automation sequence
+        function runDemo() {
+            // Reset all steps
+            steps.forEach(step => step.classList.remove('active', 'fade-in'));
+            currentStep = 0;
+            
+            // 1. Simulate KYC + USDC deposit
+            activateStep(0);
+            simulateProgress(1000, () => {
+                usdcBal.textContent = `USDC: 10,000.00`;
+                activateStep(1);
+                
+                // 2. Mint USDX (0.25% fee)
+                setTimeout(() => {
+                    usdxAmount = 10000 * 0.9975;
+                    usdcBal.textContent = `USDC: 0.00 (Fee: $25.00)`;
+                    usdxBal.textContent = `USDX: ${usdxAmount.toFixed(2)}`;
+                    activateStep(2);
+                    
+                    // 3. Start rebase simulation
+                    startRebase();
+                    
+                    // 4. Wrap to wUSDX after 2 rebases
+                    setTimeout(() => {
+                        activateStep(3);
+                        wusdxBal.textContent = `wUSDX: ${usdxAmount.toFixed(2)}`;
+                        usdxBal.textContent = `USDX: 0.00`;
+                        activateStep(4);
+                        
+                        // 5. Simulate redemption
+                        setTimeout(() => {
+                            activateStep(5);
+                            setTimeout(() => {
+                                usdcBal.textContent = `USDC: ${(usdxAmount * 0.995).toFixed(2)}`;
+                                usdxAmount = 0;
+                                usdxBal.textContent = 'USDX: 0.00';
+                                wusdxBal.textContent = 'wUSDX: 0.00';
+                                document.getElementById('reserves').classList.add('active', 'fade-in');
+                                
+                                // Restart demo
+                                setTimeout(runDemo, 3000);
+                            }, 2000);
+                        }, 2000);
+                    }, 6000);
+                }, 2000);
+            });
+        }
+
+        function activateStep(stepIndex) {
+            steps[currentStep].classList.remove('active');
+            currentStep = stepIndex;
+            steps[stepIndex].classList.add('active', 'fade-in');
+        }
+
+        function startRebase() {
+            const rebaseInterval = setInterval(() => {
+                rebaseCount++;
+                const yieldAmount = usdxAmount * 0.000137; // ~5% APY daily
+                usdxAmount += yieldAmount;
+                usdxBal.textContent = `USDX: ${usdxAmount.toFixed(2)} (+${yieldAmount.toFixed(2)})`;
+                steps[2].innerHTML = `3. Daily rebase (${rebaseCount}x): +5% APY`;
+            }, 5000); // Rebases every 5s for demo
+        }
+
+        function simulateProgress(duration, callback) {
+            let start = Date.now();
+            const interval = setInterval(() => {
+                let progress = (Date.now() - start) / duration;
+                if (progress >= 1) {
+                    clearInterval(interval);
+                    callback();
+                }
+            }, 100);
+        }
+
+        // Start demo
+        runDemo();
+    </script>
+</body>
+</html>
