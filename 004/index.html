@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USDX Protocol Demo</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
+    <script src="script.js" defer></script>
+    <script src="gif.js" defer></script>
+    
+</head>
+<body>
+    <div class="container">
+        <div class="stats-panel">
+            <h1>USDX PROTOCOL</h1>
+            
+            <div class="stat-item">
+                <div class="stat-label">TVL:</div>
+                <div class="stat-value" id="tvl">$0.00</div>
+            </div>
+            
+            <div class="stat-item">
+                <div class="stat-label">Supply:</div>
+                <div class="stat-value" id="supply">0.00</div>
+            </div>
+            
+            <div class="stat-item">
+                <div class="stat-label">Price:</div>
+                <div class="stat-value" id="price">$1.00</div>
+            </div>
+            
+            <div class="stat-item">
+                <div class="stat-label">Reward Multiplier:</div>
+                <div class="stat-value" id="multiplier">1.00x</div>
+            </div>
+
+            <div class="controls">
+                <button id="kyc">KYC</button>
+                <button id="mint">Mint USDX</button>
+                <button id="distribute">Distribute Yield</button>
+                <button id="redeem">Redeem USDX</button>
+                <button id="reset">Reset Demo</button>
+            </div>
+        </div>
+        <div class="log-panel">
+            <h1>LOG</h1>
+            <div id="log-entries"></div>
+        </div>
+    </div>
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+</body>
+</html>
