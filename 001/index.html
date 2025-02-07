@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USDX Protocol Demo</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            padding: 20px;
+            background: white;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .stats-panel {
+            flex: 1;
+            border: 1px solid #000;
+            padding: 20px;
+        }
+
+        .log-panel {
+            flex: 2;
+            border: 1px solid #000;
+            padding: 20px;
+        }
+
+        .stat-item {
+            margin-bottom: 15px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .controls {
+            margin-top: 30px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #000;
+            background: white;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #f0f0f0;
+        }
+
+        .log-entry {
+            padding: 8px 0;
+            border-bottom: 1px solid #000;
+            font-family: monospace;
+            font-size: 14px;
+        }
+
+        h1 {
+            margin: 0 0 30px 0;
+            font-size: 24px;
+        }
+
+        h2 {
+            margin: 0 0 20px 0;
+            font-size: 20px;
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let tvl = 0;
+            let supply = 0;
+            let price = 1.00;
+            let rewardMultiplier = 1.00;
+            let kycEnabled = false;
+
+            function updateStats() {
+                document.getElementById('tvl').textContent = `$${tvl.toFixed(2)}`;
+                document.getElementById('supply').textContent = supply.toFixed(2);
+                document.getElementById('price').textContent = `$${price.toFixed(2)}`;
+                document.getElementById('multiplier').textContent = `${rewardMultiplier.toFixed(2)}x`;
+            }
+
+            function addLogEntry(action, amount) {
+                const now = new Date();
+                const timeStr = now.toISOString().replace('T', ' ').substr(0, 19);
+                const logEntry = document.createElement('div');
+                logEntry.className = 'log-entry';
+                logEntry.textContent = `${action} ${amount.toFixed(2)} ${timeStr}`;
+                document.getElementById('log-entries').prepend(logEntry);
+            }
+
+            document.getElementById('kyc').addEventListener('click', function() {
+                kycEnabled = !kycEnabled;
+                this.textContent = kycEnabled ? 'KYC ENABLED' : 'KYC';
+                addLogEntry('KYC', 0.00);
+            });
+
+            document.getElementById('mint').addEventListener('click', function() {
+                if (!kycEnabled) return;
+                const mintAmount = 1000;
+                tvl += mintAmount;
+                supply += mintAmount;
+                updateStats();
+                addLogEntry('MINT', mintAmount);
+            });
+
+            document.getElementById('distribute').addEventListener('click', function() {
+                if (supply === 0) return;
+                const yieldAmount = supply * 0.01;
+                rewardMultiplier += 0.01;
+                updateStats();
+                addLogEntry('YIELD', yieldAmount);
+            });
+
+            document.getElementById('redeem').addEventListener('click', function() {
+                if (supply === 0) return;
+                const redeemAmount = supply * rewardMultiplier;
+                tvl = 0;
+                supply = 0;
+                rewardMultiplier = 1.00;
+                updateStats();
+                addLogEntry('REDEEM', redeemAmount);
+            });
+
+            document.getElementById('reset').addEventListener('click', function() {
+                tvl = 0;
+                supply = 0;
+                price = 1.00;
+                rewardMultiplier = 1.00;
+                kycEnabled = false;
+                document.getElementById('kyc').textContent = 'KYC';
+                updateStats();
+                addLogEntry('RESET', 0.00);
+                document.getElementById('log-entries').innerHTML = '';
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="stats-panel">
+            <h1>USDX PROTOCOL</h1>
+            
+            <div class="stat-item">
+                <div class="stat-label">TVL:</div>
+                <div class="stat-value" id="tvl">$0.00</div>
+            </div>
+            
+            <div class="stat-item">
+                <div class="stat-label">Supply:</div>
+                <div class="stat-value" id="supply">0.00</div>
+            </div>
+            
+            <div class="stat-item">
+                <div class="stat-label">Price:</div>
+                <div class="stat-value" id="price">$1.00</div>
+            </div>
+            
+            <div class="stat-item">
+                <div class="stat-label">Reward Multiplier:</div>
+                <div class="stat-value" id="multiplier">1.00x</div>
+            </div>
+
+            <div class="controls">
+                <button id="kyc">KYC</button>
+                <button id="mint">Mint USDX</button>
+                <button id="distribute">Distribute Yield</button>
+                <button id="redeem">Redeem USDX</button>
+                <button id="reset">Reset Demo</button>
+            </div>
+        </div>
+
+        <div class="log-panel">
+            <h2>LOG</h2>
+            <div id="log-entries"></div>
+        </div>
+    </div>
+</body>
+</html>

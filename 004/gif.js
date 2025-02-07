@@ -5,12 +5,18 @@ function createGif() {
         .replace('T', '')
         .split('.')[0];
 
+    // Get container dimensions
+    const container = document.querySelector('.container');
+    const containerWidth = container.offsetWidth;
+
+
+
     const gif = new GIF({
         workers: 2,
         quality: 10,
-        width: 1024,
+        width: containerWidth, // Use container width
         height: 400,
-        workerScript: '/003/gif.worker.js'  // Local path to worker
+        workerScript: '/004/gif.worker.js'  // Local path to worker
     });
 
     const actions = [
